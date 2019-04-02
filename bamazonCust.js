@@ -1,57 +1,74 @@
+require("dotenv").config();
 var mysql = require("mysql");
 var inquirer = require("inquirer");
 
 var con = mysql.createConnection({
   host: "localhost",
   port: 3306,
-  user: "admin",
-  password: "admin",
+  user: process.env.MYSQL_USER,
+  password: process.env.MYSQL_PW,
   database: "bamazon_db"
 });
 
-// con.connect(function(err) {
-//   if (err) throw err;
-//   console.log("connected as id " + con.threadId + "\n");
-// });
-
-function showProducts() {
-  con.query("SELECT * FROM products", function(err, res) {
-    if (err) throw err;
-    console.table(res);
-    takeOrder();
-  });
+function inventory() {
+  con.query(
+    "SELECT item_id as ID, product_name as Item, cust_price as Price, stock_quantity as Quantity FROM products",
+    function(err, res) {
+      if (err) throw err;
+      console.table(res);
+      takeOrder();
+    }
+  );
 }
 
 function takeOrder() {
+  let itemCount = function() {
+    return new Promise((resolve, reject) => {
+      con.query("SELECT COUNT(*) as IDcount FROM products", function(err, res) {
+        if (err) reject(err);
+        let count = res[0].IDcount;
+        resolve(count);
+      });
+    });
+  };
+  let rowNumCheck = async function(input) {
+    let count = await itemCount();
+    if (isNaN(input) || input > count || input < 1) {
+      console.log("\nPlease enter a valid ID ");
+      return false;
+    }
+    return true;
+  };
+
   inquirer
     .prompt([
       {
         type: "input",
         message:
-          "\n Please select an item to purchase by entering the item_id!",
-        name: "selection"
+          " Please select an item to purchase by entering the ID! \n   ID: ",
+        name: "selection",
+        validate: rowNumCheck
       },
       {
         type: "input",
-        message: "\n How many would you like?",
+        message: " How many would you like? \n   Quantity: ",
         name: "quantity"
       }
     ])
     .then(function(response) {
-      console.log("RESPONSE: ", response);
       con.query(
         "SELECT * FROM products WHERE item_id =" + response.selection,
         function(err, res) {
           if (err) throw err;
           else if (res[0].stock_quantity < response.quantity) {
+            let maxQ = res[0].stock_quantity;
             console.log(
-              "We don't have enough! Please select a smaller quanity or purchase a different item"
+              `   We don't have enough! \n   The most you can order is ${maxQ} \n   Please select a smaller quanity or purchase a different item`
             );
             takeOrder();
           } else {
             let updatedQ = res[0].stock_quantity - response.quantity;
             let item = response.selection;
-            console.log(item, updatedQ);
             con.query(
               `UPDATE products SET stock_quantity = ${updatedQ} WHERE item_id =${item}`
             );
@@ -65,14 +82,4 @@ function takeOrder() {
       );
     });
 }
-showProducts();
-
-//  // grabbing row count to validate user input
-//  con.query("SELECT COUNT(item_id) FROM bamazon_db.products", function(
-//     err,
-//     res
-//   ) {
-//     if (err) throw err;
-//     console.log(res);
-//     con.end();
-//   });
+inventory();
