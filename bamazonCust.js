@@ -76,10 +76,11 @@ function takeOrder() {
               "Thank you for your purchase. Your total is $" +
                 res[0].cust_price * response.quantity
             );
-            con.end();
+            inventory();
           }
         }
       );
     });
 }
-inventory();
+
+module.exports = inventory;
