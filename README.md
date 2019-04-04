@@ -8,6 +8,7 @@ Using mysql npm package, this project sets up a simple CLI app to view, purchase
 - Run npm install to grab the inquirer and mysql packages
 - Make sure you have a SQL database and include your credentials in a .env folder to authenticate
 - Copy bamazon.sql file into your SQL client and run queries to create db, create table, and insert data into table.
+- From your terminal run "node bamazon.js" to start the app
 
 ### Technology used
 

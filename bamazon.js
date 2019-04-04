@@ -2,6 +2,7 @@ let cust = require("./bamazonCust2");
 let manager = require("./bamazonMgr");
 let inquirer = require("inquirer");
 
+// simple prompt with a switch statement to route user to the proper menu
 function bamazon() {
   inquirer
     .prompt([
