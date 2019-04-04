@@ -1,6 +1,7 @@
 var inquirer = require("inquirer");
 var query = require("./query");
 
+// prompt to select which channel to send user to.  switch statement below calls the appropriate function.
 function mgr() {
   inquirer
     .prompt([
@@ -37,6 +38,7 @@ function mgr() {
       }
     });
 }
+// function that selects all inventory for sale from the db
 async function inventory() {
   let results = await query(
     "SELECT item_id as ID, product_name as Item, cust_price as Price, stock_quantity as Quantity FROM bamazon_db.products"
@@ -45,6 +47,7 @@ async function inventory() {
   mgr();
 }
 
+// function that selects all inventory with low quantity (less than 5 units left)
 async function lowInventory() {
   let results = await query(
     "SELECT item_id as ID, product_name as Item, cust_price as Price, stock_quantity as Quantity FROM bamazon_db.products WHERE stock_quantity <= 5"
@@ -53,6 +56,7 @@ async function lowInventory() {
   mgr();
 }
 
+// function that allows user to adjust inventory.  handles negative numbers if the user needs to reduce the inventory.
 async function addInventory() {
   let results = await query("SELECT * FROM bamazon_db.products");
   console.table(results);
@@ -94,6 +98,7 @@ async function addInventory() {
     });
 }
 
+// function that gathers all the required information for a new product in the table and feeds that information to the database in an INSERT INTO statement
 async function addNewItem() {
   inquirer
     .prompt([
